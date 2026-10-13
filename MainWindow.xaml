@@ -5,8 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RoR2RenamingConvention"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="Risk of Rain 2 Renaming Convention" Height="450" Width="1200" ResizeMode="NoResize">
+    <Grid >
+        <Grid x:Name="ConventionGrid">
+            <ListBox x:Name="DLCList" HorizontalAlignment="Left" Height="84" Margin="44,59,0,0" VerticalAlignment="Top" Width="188" d:ItemsSource="{d:SampleData ItemCount=5}" MouseLeftButtonUp="SelectDLC"/>
+            <Label Content="Langauge File Name&#xD;&#xA;" HorizontalAlignment="Left" Margin="44,32,0,0" VerticalAlignment="Top" Height="27"/>
+            <Image x:Name="IconImage" Margin="1055,46,40,332" Stretch="Fill"/>
+            <Label x:Name="LanguageLabel" Content="Label" HorizontalAlignment="Left" Margin="1020,20,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.132,-0.037" HorizontalContentAlignment="Center" Width="139"/>
+            <ListBox x:Name="LangItemList" HorizontalAlignment="Left" Height="232" Margin="44,165,0,0" VerticalAlignment="Top" Width="499" d:ItemsSource="{d:SampleData ItemCount=5}" MouseLeftButtonUp="SelectLangItem"/>
+            <Label x:Name="debug_DLCitemlabel" Content="Label" HorizontalAlignment="Left" Margin="872,199,0,0" VerticalAlignment="Top"/>
+        </Grid>
+        <Grid x:Name="LoadGrid" IsEnabled="False" Visibility="Hidden">
+            <Button Content="Load Custom Language" HorizontalAlignment="Center" Margin="0,282,0,0" VerticalAlignment="Top" Height="32" Width="150" Click="Click_LoadCustomLanguage" FontWeight="Bold" FontSize="13" FontFamily="Comic Sans MS"/>
+            <Label Content="RoR 2 Renaming Convention" HorizontalAlignment="Center" Margin="0,91,0,0" VerticalAlignment="Top" FontFamily="Comic Sans MS" FontWeight="Bold" FontSize="36"/>
+
+        </Grid>
     </Grid>
+
 </Window>
