@@ -29,10 +29,14 @@ namespace RoR2RenamingConvention
         //currently editing
         JObject currentlyEditing_JSON;
         HashSet<string> currentlyEditing_Hash;
+        string currentlyEditingFileName;
 
         //mirror for view
         JObject officialMirror_JSON;
         HashSet<string> officialMirror_Hash;
+
+        string paranoia_key = null;
+        string paranoia_value = null;
 
         public MainWindow()
         {
@@ -79,10 +83,17 @@ namespace RoR2RenamingConvention
         {
             if (DLCList.SelectedItem == null) return;
 
+            SaveCurrentEdit();
+            paranoia_key = null;
+            paranoia_value = null;
+            CustomLanguage_Textbox.Text = "";
+            OfficialLnguage_Textbox.Text = "";
+
             currentlyEditing_Hash = new HashSet<string>();
-            string jsonBytes = File.ReadAllText($"{customFolderLocation}\\{DLCList.SelectedItem.ToString()}.json");
+            currentlyEditingFileName = DLCList.SelectedItem.ToString();
+            string jsonBytes = File.ReadAllText($"{customFolderLocation}\\{currentlyEditingFileName}.json");
             currentlyEditing_JSON = JObject.Parse(jsonBytes);
-            JToken token = currentlyEditing_JSON.GetValue(DLCList.SelectedItem.ToString() != "language" ? "strings" : "language");
+            JToken token = currentlyEditing_JSON.GetValue(currentlyEditingFileName != "language" ? "strings" : "language");
             foreach (JProperty curr in token.Children())
             {
                 currentlyEditing_Hash.Add(curr.Name);
@@ -92,9 +103,9 @@ namespace RoR2RenamingConvention
             if(IsOfficialLoaded())
             {
                 officialMirror_Hash = new HashSet<string>();
-                jsonBytes = File.ReadAllText($"{officialFolderLocation}\\{DLCList.SelectedItem.ToString()}.json");
+                jsonBytes = File.ReadAllText($"{officialFolderLocation}\\{currentlyEditingFileName}.json");
                 officialMirror_JSON = JObject.Parse(jsonBytes);
-                token = officialMirror_JSON.GetValue(DLCList.SelectedItem.ToString() != "language" ? "strings" : "language");
+                token = officialMirror_JSON.GetValue(currentlyEditingFileName != "language" ? "strings" : "language");
                 foreach (JProperty curr in token.Children())
                 {
                     officialMirror_Hash.Add(curr.Name);
@@ -107,8 +118,12 @@ namespace RoR2RenamingConvention
         {
             if (currentlyEditing_JSON == null) return;
 
+            SaveCurrentEdit();
+
             JToken token = currentlyEditing_JSON.GetValue(DLCList.SelectedItem.ToString() != "language" ? "strings" : "language");
-            CustomLanguage_Textbox.Text = token[LangItemList.SelectedItem.ToString()].ToString();
+            paranoia_key = LangItemList.SelectedItem.ToString();
+            paranoia_value = token[paranoia_key].ToString();
+            CustomLanguage_Textbox.Text = paranoia_value;
 
             if(IsOfficialLoaded())
             {
@@ -136,6 +151,32 @@ namespace RoR2RenamingConvention
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             //checkbox_untranslatedFilter
+        }
+
+        void SaveCurrentEdit()
+        {
+            if (paranoia_value == null) return;
+
+            //if i changed
+            if(paranoia_value != CustomLanguage_Textbox.Text)
+            {
+                string stringOrLang = "strings";
+                JToken originalToken = currentlyEditing_JSON.GetValue(stringOrLang);
+                if (originalToken == null)
+                {
+                    stringOrLang = "language";
+                    originalToken = currentlyEditing_JSON.GetValue(stringOrLang);
+                }
+
+                //now i know if it's strings or lang
+
+                currentlyEditing_JSON[stringOrLang][paranoia_key] = CustomLanguage_Textbox.Text;
+
+
+                string output = JsonConvert.SerializeObject(currentlyEditing_JSON, Formatting.Indented);
+                File.WriteAllText($"{customFolderLocation}\\{currentlyEditingFileName}.json", output);
+            }
+
         }
 
         bool IsOfficialLoaded()
@@ -168,6 +209,9 @@ namespace RoR2RenamingConvention
 
             LoadGrid.IsEnabled = initialBoot;
             LoadGrid.Visibility = initialBoot ? Visibility.Visible : Visibility.Hidden;
+
+            CustomLanguage_Textbox.Text = "";
+            OfficialLnguage_Textbox.Text = "";
         }
 
         private void Click_LoadOriginalLanguage(object sender, RoutedEventArgs e)
