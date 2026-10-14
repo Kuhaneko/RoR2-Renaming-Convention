@@ -13,7 +13,31 @@
             <Image x:Name="IconImage" Margin="1055,46,40,332" Stretch="Fill"/>
             <Label x:Name="LanguageLabel" Content="Label" HorizontalAlignment="Left" Margin="1020,20,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.132,-0.037" HorizontalContentAlignment="Center" Width="139"/>
             <ListBox x:Name="LangItemList" HorizontalAlignment="Left" Height="232" Margin="44,165,0,0" VerticalAlignment="Top" Width="499" d:ItemsSource="{d:SampleData ItemCount=5}" MouseLeftButtonUp="SelectLangItem"/>
-            <Label x:Name="debug_DLCitemlabel" Content="Label" HorizontalAlignment="Left" Margin="872,199,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="CustomLanguage_Textbox" HorizontalAlignment="Left" Margin="660,165,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="185" Height="232"/>
+            <Label Content="Custom Language" HorizontalAlignment="Left" Margin="660,134,0,0" VerticalAlignment="Top"/>
+            <Label x:Name="OfficialLnguage_Label" Content="Original Language" HorizontalAlignment="Left" Margin="936,134,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="OfficialLnguage_Textbox" HorizontalAlignment="Left" Margin="936,165,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="185" Height="232" IsEnabled="False"/>
+            <Button Content="Load Original&#xD;&#xA;Language" HorizontalAlignment="Left" Margin="277,63,0,0" VerticalAlignment="Top" Click="Click_LoadOriginalLanguage" Height="41" RenderTransformOrigin="0.5,0.5" Width="112" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="1.066"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+            </Button>
+            <Button x:Name="UpdateCustomWithOriginal_Button" Content="Update custom &#xD;&#xA;with original" HorizontalAlignment="Left" Margin="415,63,0,0" VerticalAlignment="Top" Click="Click_UpdateCustomWithOriginal" Height="41" RenderTransformOrigin="0.5,0.5" Width="112" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="1.066"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+            </Button>
+            <CheckBox x:Name="checkbox_untranslatedFilter" Content="Show only untranslated" HorizontalAlignment="Left" Margin="278,128,0,0" VerticalAlignment="Top" Checked="CheckBox_Checked"/>
         </Grid>
         <Grid x:Name="LoadGrid" IsEnabled="False" Visibility="Hidden">
             <Button Content="Load Custom Language" HorizontalAlignment="Center" Margin="0,282,0,0" VerticalAlignment="Top" Height="32" Width="150" Click="Click_LoadCustomLanguage" FontWeight="Bold" FontSize="13" FontFamily="Comic Sans MS"/>
