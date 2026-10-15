@@ -37,7 +37,8 @@
                     </TransformGroup>
                 </Button.RenderTransform>
             </Button>
-            <CheckBox x:Name="checkbox_untranslatedFilter" Content="Show only untranslated" HorizontalAlignment="Left" Margin="278,128,0,0" VerticalAlignment="Top" Checked="CheckBox_Checked"/>
+            <CheckBox x:Name="checkbox_untranslatedFilter" Content="Show only untranslated" HorizontalAlignment="Left" Margin="278,128,0,0" VerticalAlignment="Top" Checked="Click_FilterLangItems" Unchecked="Click_FilterLangItems"/>
+            <CheckBox x:Name="checkbox_hideloredesc" Content="Hide Lore/Desc" HorizontalAlignment="Left" Margin="444,128,0,0" VerticalAlignment="Top" Checked="Click_FilterLangItems" Unchecked="Click_FilterLangItems"/>
         </Grid>
         <Grid x:Name="LoadGrid" IsEnabled="False" Visibility="Hidden">
             <Button Content="Load Custom Language" HorizontalAlignment="Center" Margin="0,282,0,0" VerticalAlignment="Top" Height="32" Width="150" Click="Click_LoadCustomLanguage" FontWeight="Bold" FontSize="13" FontFamily="Comic Sans MS"/>

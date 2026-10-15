@@ -18,30 +18,29 @@ namespace RoR2RenamingConvention
     public partial class MainWindow : Window
     {
         //custom
-        HashSet<string> languagesFiles;
+        List<string> languagesFiles;
         string customFolderLocation = null;
 
         //official
-        HashSet<string> officialFiles;
+        List<string> officialFiles;
         string officialFolderLocation = null;
 
 
         //currently editing
         JObject currentlyEditing_JSON;
-        HashSet<string> currentlyEditing_Hash;
+        List<string> currentlyEditing_Hash;
         string currentlyEditingFileName;
 
         //mirror for view
         JObject officialMirror_JSON;
-        HashSet<string> officialMirror_Hash;
 
         string paranoia_key = null;
         string paranoia_value = null;
 
         public MainWindow()
         {
-            languagesFiles = new HashSet<string>();
-            officialFiles = new HashSet<string>();
+            languagesFiles = new List<string>();
+            officialFiles = new List<string>();
             InitializeComponent();
             SwitchWindow(true);
         }
@@ -57,6 +56,8 @@ namespace RoR2RenamingConvention
             UpdateCustomWithOriginal_Button.IsEnabled = false;
             checkbox_untranslatedFilter.Visibility = Visibility.Hidden;
             checkbox_untranslatedFilter.IsEnabled = false;
+            checkbox_hideloredesc.Visibility = Visibility.Hidden;
+            checkbox_hideloredesc.IsEnabled = false;
             OfficialLnguage_Label.Visibility = Visibility.Hidden;
             OfficialLnguage_Label.IsEnabled = false;
             OfficialLnguage_Textbox.Visibility = Visibility.Hidden;
@@ -89,7 +90,7 @@ namespace RoR2RenamingConvention
             CustomLanguage_Textbox.Text = "";
             OfficialLnguage_Textbox.Text = "";
 
-            currentlyEditing_Hash = new HashSet<string>();
+            currentlyEditing_Hash = new List<string>();
             currentlyEditingFileName = DLCList.SelectedItem.ToString();
             string jsonBytes = File.ReadAllText($"{customFolderLocation}\\{currentlyEditingFileName}.json");
             currentlyEditing_JSON = JObject.Parse(jsonBytes);
@@ -98,19 +99,15 @@ namespace RoR2RenamingConvention
             {
                 currentlyEditing_Hash.Add(curr.Name);
             }
+            currentlyEditing_Hash.Sort();
             LangItemList.ItemsSource = currentlyEditing_Hash;
 
             if(IsOfficialLoaded())
             {
-                officialMirror_Hash = new HashSet<string>();
                 jsonBytes = File.ReadAllText($"{officialFolderLocation}\\{currentlyEditingFileName}.json");
                 officialMirror_JSON = JObject.Parse(jsonBytes);
-                token = officialMirror_JSON.GetValue(currentlyEditingFileName != "language" ? "strings" : "language");
-                foreach (JProperty curr in token.Children())
-                {
-                    officialMirror_Hash.Add(curr.Name);
-                }
             }
+            FilterLangItems();
         }
 
 
@@ -148,9 +145,71 @@ namespace RoR2RenamingConvention
             return Path.GetDirectoryName(ofd.FileName);
         }
 
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        private void Click_FilterLangItems(object sender, RoutedEventArgs e)
         {
+            SelectDLC(null, null);
+        }
+
+        private void FilterLangItems()
+        {
+            //ignore filters if both are not checked
+            if((bool)!checkbox_untranslatedFilter.IsChecked && (bool)!checkbox_hideloredesc.IsChecked)
+            {
+                return;
+            }
+
+            //for now i dont really care about hiding the files themself because it's a hurdle to
+            //needlessly check every single item for every file... just inefficient
+            //it would be at the start if it was implemented though...
+
+
+            //if we not editing any file then get me out
+            if (currentlyEditing_Hash == null)
+            {
+                return;
+            }
+
+            List<string> copy_currentlyEditing = new List<string>(currentlyEditing_Hash);
+
+            //for every one
+            foreach(string lang in copy_currentlyEditing)
+            {
+                //first i'd hide lore because i dont want to run this twice
+                if((bool)checkbox_hideloredesc.IsChecked)
+                {
+                    if(lang.ToUpper().Contains("_LORE") || lang.ToUpper().Contains("_DESC"))
+                    {
+                        currentlyEditing_Hash.Remove(lang);
+                    }
+                }
+
+                if((bool)checkbox_untranslatedFilter.IsChecked)
+                {
+                    string stringorlang = StringOrLang(currentlyEditing_JSON);
+                    if (currentlyEditing_JSON[stringorlang][lang].ToString() != officialMirror_JSON[stringorlang][lang].ToString())
+                    {
+                        currentlyEditing_Hash.Remove(lang);
+                    }
+                }
+
+            }
+
+
+
             //checkbox_untranslatedFilter
+            //checkbox_hideloredesc
+        }
+
+        string StringOrLang(JObject jobject)
+        {
+            string stringOrLang = "strings";
+            JToken originalToken = jobject.GetValue(stringOrLang);
+            if (originalToken == null)
+            {
+                stringOrLang = "language";
+                originalToken = jobject.GetValue(stringOrLang);
+            }
+            return stringOrLang;
         }
 
         void SaveCurrentEdit()
@@ -160,13 +219,7 @@ namespace RoR2RenamingConvention
             //if i changed
             if(paranoia_value != CustomLanguage_Textbox.Text)
             {
-                string stringOrLang = "strings";
-                JToken originalToken = currentlyEditing_JSON.GetValue(stringOrLang);
-                if (originalToken == null)
-                {
-                    stringOrLang = "language";
-                    originalToken = currentlyEditing_JSON.GetValue(stringOrLang);
-                }
+                string stringOrLang = StringOrLang(currentlyEditing_JSON);
 
                 //now i know if it's strings or lang
 
@@ -229,6 +282,8 @@ namespace RoR2RenamingConvention
             UpdateCustomWithOriginal_Button.IsEnabled = true;
             checkbox_untranslatedFilter.Visibility = Visibility.Visible;
             checkbox_untranslatedFilter.IsEnabled = true;
+            checkbox_hideloredesc.Visibility = Visibility.Visible;
+            checkbox_hideloredesc.IsEnabled = true;
             OfficialLnguage_Label.Visibility = Visibility.Visible;
             OfficialLnguage_Label.IsEnabled = true;
             OfficialLnguage_Textbox.Visibility = Visibility.Visible;
@@ -236,14 +291,10 @@ namespace RoR2RenamingConvention
             ///SelectDLC
             if (DLCList.SelectedItem == null) return;
 
-            officialMirror_Hash = new HashSet<string>();
             string jsonBytes = File.ReadAllText($"{officialFolderLocation}\\{DLCList.SelectedItem.ToString()}.json");
             officialMirror_JSON = JObject.Parse(jsonBytes);
             JToken token = officialMirror_JSON.GetValue(DLCList.SelectedItem.ToString() != "language" ? "strings" : "language");
-            foreach (JProperty curr in token.Children())
-            {
-                officialMirror_Hash.Add(curr.Name);
-            }
+
 
 
             ///SelectLangItem
@@ -270,8 +321,8 @@ namespace RoR2RenamingConvention
                 //file exists, check it's contents against the customs
                 JObject customToSaveLater = GetJObjectFromJson($"{customFolderLocation}\\{original}.json");
                 JObject originalToReadData = GetJObjectFromJson($"{officialFolderLocation}\\{original}.json");
-                HashSet<string> customHash = LoadStringSetFromJObject(customToSaveLater);
-                HashSet<string> originalHash = LoadStringSetFromJObject(originalToReadData);
+                List<string> customHash = LoadStringSetFromJObject(customToSaveLater);
+                List<string> originalHash = LoadStringSetFromJObject(originalToReadData);
 
 
                 //for all entries in a file that's officially included
@@ -281,13 +332,7 @@ namespace RoR2RenamingConvention
                     if (customHash.Contains(entry)) continue;
 
                     //this entry needs to be added to the custom
-                    string stringOrLang = "strings";
-                    JToken originalToken = originalToReadData.GetValue(stringOrLang);
-                    if (originalToken == null)
-                    {
-                        stringOrLang = "language";
-                        originalToken = originalToReadData.GetValue(stringOrLang);
-                    }
+                    string stringOrLang = StringOrLang(originalToReadData);
 
                     customToSaveLater[stringOrLang][entry] = originalToReadData[stringOrLang][entry];
                 }
@@ -304,10 +349,10 @@ namespace RoR2RenamingConvention
             return currentlyEditing_JSON;
         }
 
-        HashSet<string> LoadStringSetFromJObject(JObject jobject)
+        List<string> LoadStringSetFromJObject(JObject jobject)
         {
             //file exists, check it's contents against the customs
-            HashSet<string> hashset = new HashSet<string>();
+            List<string> hashset = new List<string>();
             JToken token = jobject.GetValue("strings");
             if(token == null)
             {
